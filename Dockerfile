@@ -205,7 +205,7 @@ RUN source /assets/functions/00-container && \
     if [ "${influx2,,}" = "true" ] ; then \
         curl -sSL https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX2_CLIENT_VERSION}-linux-${influx_arch}.tar.gz | tar xvfz - --strip=1 -C /usr/src/ ; \
         chmod +x /usr/src/influx ; \
-        mv /usr/src/influx /usr/sbin/ ;
+        mv /usr/src/influx /usr/sbin/ ; \
     else \
         echo >&2 "Unable to build Influx 2 on this system" ; \
     fi ; \

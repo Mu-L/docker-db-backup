@@ -1,3 +1,9 @@
+## 4.1.7 2024-10-29 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for 4.1.6
+
+
 ## 4.1.6 2024-10-29 <dave at tiredofit dot ca>
 
    ### Changed
