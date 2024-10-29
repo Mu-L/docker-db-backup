@@ -1,3 +1,14 @@
+## 4.1.5 2024-10-29 <dave at tiredofit dot ca>
+
+   ### Added
+      - Pin to tiredofit/alpine:3.20-7.10.17
+      - MySQL 8.4.3 client
+      - MSSQL and MSODBC 18.4.1.1-1
+      - Influx2 Client Version
+      - AWS Client 1.35.13
+      - Postgresql 17.x Support
+
+
 ## 4.1.4 2024-08-13 <dave at tiredofit dot ca>
 
 Please note that if using encryption using a passphrase, you may be encountering issues with manual decryption. This release fixes that.
