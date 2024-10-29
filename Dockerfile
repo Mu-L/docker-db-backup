@@ -144,6 +144,7 @@ RUN source /assets/functions/00-container && \
                     git \
                     go \
                     libarchive-dev \
+                    libtirpc-dev \
                     openssl-dev \
                     libffi-dev \
                     ncurses-dev \
@@ -159,6 +160,7 @@ RUN source /assets/functions/00-container && \
                     gpg-agent \
                     groff \
                     libarchive \
+                    libtirpc \
                     mariadb-client \
                     mariadb-connector-c \
                     mongodb-tools \
@@ -200,8 +202,13 @@ RUN source /assets/functions/00-container && \
         echo >&2 "Detected non x86_64 or ARM64 build variant, skipping MSSQL installation" ; \
     fi; \
     \
-    if [ "${influx2,,}" = "true" ] ; then curl -sSL https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX2_CLIENT_VERSION}-linux-${influx_arch}.tar.gz | tar xvfz - --strip=1 -C /usr/src/ ; chmod +x /usr/src/influx ; mv /usr/src/influx /usr/sbin/ ; else echo >&2 "Unable to build Influx 2 on this system" ; fi ; \
-    sleep 30 && \
+    if [ "${influx2,,}" = "true" ] ; then \
+        curl -sSL https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX2_CLIENT_VERSION}-linux-${influx_arch}.tar.gz | tar xvfz - --strip=1 -C /usr/src/ ; \
+        chmod +x /usr/src/influx ; \
+        mv /usr/src/influx /usr/sbin/ ;
+    else \
+        echo >&2 "Unable to build Influx 2 on this system" ; \
+    fi ; \
     clone_git_repo https://github.com/influxdata/influxdb "${INFLUX1_CLIENT_VERSION}" && \
     go build -o /usr/sbin/influxd ./cmd/influxd && \
     strip /usr/sbin/influxd && \

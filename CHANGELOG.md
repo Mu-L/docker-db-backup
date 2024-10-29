@@ -1,3 +1,9 @@
+## 4.1.6 2024-10-29 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Add libtirpc
+
+
 ## 4.1.5 2024-10-29 <dave at tiredofit dot ca>
 
    ### Added
