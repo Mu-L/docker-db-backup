@@ -8,13 +8,12 @@ VERSION_SOURCE := $(shell sed -n 's/^var Version = "\([^"]*\)"/\1/p' src/cmd/dbb
 GIT_REV := $(shell git rev-parse --short HEAD 2>/dev/null)
 GIT_DIRTY := $(if $(GIT_REV),$(shell git diff --quiet HEAD 2>/dev/null || echo -dirty))
 VERSION_DEV := $(if $(GIT_REV),$(VERSION_SOURCE)-g$(GIT_REV)$(GIT_DIRTY),$(VERSION_SOURCE))
-VERSION := $(shell [ -n "$$DBBACKUP_VERSION" ] && echo "$$DBBACKUP_VERSION" || echo "$(VERSION_DEV)")
-BUILD_TIME := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-BUILD_FLAGS := -X main.Version=$(VERSION) -X main.buildChannel=$(CHANNEL) -X main.buildCommit=$(GIT_COMMIT) -X main.buildDate=$(BUILD_TIME)
-
-GIT_COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null)
+VERSION := $(shell if [ -n "$$DBBACKUP_VERSION" ] && [ "$$DBBACKUP_VERSION" != "dev" ]; then echo "$$DBBACKUP_VERSION"; else echo "$(VERSION_DEV)"; fi)
+GIT_COMMIT ?= $(shell if [ -n "$$DBBACKUP_COMMIT" ]; then echo "$$DBBACKUP_COMMIT"; else git rev-parse --short HEAD 2>/dev/null; fi)
 # edge (default) | beta | stable
 CHANNEL ?= edge
+BUILD_TIME := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+BUILD_FLAGS := -X main.Version=$(VERSION) -X main.buildChannel=$(CHANNEL) -X main.buildCommit=$(GIT_COMMIT) -X main.buildDate=$(BUILD_TIME)
 BASE_IMAGE := docker.io/nfrastack/base:alpine_3.24
 comma := ,
 empty :=
@@ -95,11 +94,11 @@ install:
 	cp $(BINARY_NAME) /usr/local/bin/$(BINARY_NAME)
 
 container-build:
-	docker build --build-arg BASE_IMAGE=$(BASE_IMAGE) --build-arg DBBACKUP_VERSION=$(VERSION) -t nfrastack/$(IMAGE_NAME):$(VERSION) -f container/Containerfile .
+	docker build --build-arg BASE_IMAGE=$(BASE_IMAGE) --build-arg DBBACKUP_VERSION=$(VERSION) --build-arg DBBACKUP_COMMIT=$(GIT_COMMIT) -t nfrastack/$(IMAGE_NAME):$(VERSION) -f container/Containerfile .
 	docker tag nfrastack/$(IMAGE_NAME):$(VERSION) nfrastack/$(IMAGE_NAME):latest
 
 container-build-test:
-	docker build --build-arg BASE_IMAGE=$(BASE_IMAGE) -t db-backup:test -f container/Containerfile .
+	docker build --build-arg BASE_IMAGE=$(BASE_IMAGE) --build-arg DBBACKUP_VERSION=$(VERSION) --build-arg DBBACKUP_COMMIT=$(GIT_COMMIT) -t db-backup:test -f container/Containerfile .
 
 help:
 	@echo "make build                Build the full binary (supporter edition)"

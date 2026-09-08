@@ -16,12 +16,22 @@ var (
 
 var betaRe = regexp.MustCompile(`(b|rc)\d+$`)
 
+var (
+	commitHRe   = regexp.MustCompile(`(?i)-h([0-9a-f]{7,})$`)
+	devCommitRe = regexp.MustCompile(`(?i)^dev-([0-9a-f]{7,})(?:-dirty)?$`)
+)
+
 func resolveChannel(version string) string {
 	if buildChannel != "" {
 		switch strings.ToLower(buildChannel) {
 		case "stable", "beta", "edge":
 			return strings.ToLower(buildChannel)
 		}
+	}
+	lower := strings.ToLower(version)
+	if strings.HasPrefix(lower, "dev-") || strings.HasPrefix(lower, "dev+") ||
+		strings.HasPrefix(lower, "dev_") || lower == "dev" {
+		return "edge"
 	}
 	if strings.Contains(version, "-g") || strings.Contains(version, "-dev") ||
 		strings.Contains(version, "+") {
@@ -43,6 +53,13 @@ func resolveCommit(version string) string {
 		if sha != "" {
 			return sha
 		}
+	}
+	trimmed := strings.TrimSuffix(version, "-dirty")
+	if m := commitHRe.FindStringSubmatch(trimmed); m != nil {
+		return m[1]
+	}
+	if m := devCommitRe.FindStringSubmatch(trimmed); m != nil {
+		return m[1]
 	}
 	return ""
 }

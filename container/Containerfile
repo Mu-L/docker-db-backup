@@ -24,7 +24,8 @@ ENV \
     IMAGE_REPO_URL="https://github.com/nfrastack/db-backup/"
 
 ARG \
-    DBBACKUP_VERSION="dev" \
+    DBBACKUP_VERSION \
+    DBBACKUP_COMMIT \
     GOLANG_VERSION="1.26.7"
 
 HEALTHCHECK \
@@ -43,12 +44,29 @@ RUN echo "" && \
                                     make \
                                 " \
                                 && \
+    dbbver="${DBBACKUP_VERSION}"; \
+    if [ "${dbbver}" = "dev" ]; then dbbver=""; fi; \
+    if [ -z "${dbbver}" ]; then \
+        if [ -n "${DBBACKUP_COMMIT}" ]; then \
+            dbbver="dev-${DBBACKUP_COMMIT}"; \
+        else \
+            dbbver="dev-$(date -u +%Y%m%d-%H%M%S)-h$(find /usr/src/db-backup/src /usr/src/db-backup/container -type f | LC_ALL=C sort | xargs sha256sum 2>/dev/null | sha256sum | cut -c1-7)"; \
+        fi; \
+    fi; \
+    dbbcommit="${DBBACKUP_COMMIT:-}"; \
+    if [ -z "${dbbcommit}" ]; then dbbcommit=$(echo "${dbbver}" | sed -n 's/.*-h\([0-9a-f]\{7,\}\).*/\1/p'); fi; \
+    if [ -z "${dbbcommit}" ]; then dbbcommit=$(echo "${dbbver}" | sed -n 's/^dev-\([0-9a-f]\{7,\}\).*/\1/p'); fi; \
     mkdir -p /usr/src/container && \
     cp -aR \
            /usr/src/db-backup/container/CHANGELOG.md \
            /usr/src/db-backup/container/README.md \
            /usr/src/db-backup/container/LICENSE \
            /usr/src/container && \
+    changelogver=$(grep -m1 '^## ' /usr/src/container/CHANGELOG.md 2>/dev/null | awk '{print $2}'); \
+    if [ -n "${dbbver}" ] && [ "${changelogver}" != "${dbbver}" ]; then \
+        { printf '## %s %s <unknkown>\n\n   ### Changed\n      - Development build %s (commit %s)\n\n' "${dbbver}" "$(date -u +%F)" "${dbbver}" "${dbbcommit:-unknown}"; cat /usr/src/container/CHANGELOG.md; } > /tmp/CHANGELOG.md && \
+        mv /tmp/CHANGELOG.md /usr/src/container/CHANGELOG.md; \
+    fi && \
     \
     source /container/base/functions/container/build && \
     container_build_log image && \
@@ -63,7 +81,7 @@ RUN echo "" && \
     \
     create_user dbbackup 10000 dbbackup 10000 /var/lib/dbb && \
     cd /usr/src/db-backup && \
-    make build-release DBBACKUP_VERSION="${DBBACKUP_VERSION}" && \
+    make build-release DBBACKUP_VERSION="${dbbver}" GIT_COMMIT="${dbbcommit}" CHANNEL=edge && \
     cp -aR \
                 dbb \
                 LICENSE\
@@ -77,6 +95,6 @@ RUN echo "" && \
     \
     cp -aR /usr/src/db-backup/container/rootfs/* / && \
     \
-    container_build_log add "DB Backup" "${DBBACKUP_VERSION}" "${IMAGE_REPO_URL}" && \
+    container_build_log add "DB Backup" "${dbbver}" "${IMAGE_REPO_URL}" && \
     package remove DBBACKUP_BUILD_DEPS && \
     package cleanup
