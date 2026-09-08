@@ -504,10 +504,6 @@ func imageLogCandidates() []string {
 
 // nfrastack container detection via build log
 func imageVersion() string {
-	// explicit override wins over build log sniffing
-	if v := os.Getenv("DBBACKUP_IMAGE_VERSION"); v != "" {
-		return v
-	}
 	for _, p := range imageLogCandidates() {
 		v := parseImageTag(p)
 		if v != "" {
