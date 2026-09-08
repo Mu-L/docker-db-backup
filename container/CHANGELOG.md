@@ -1,3 +1,8 @@
+## 5.0.1 2026-09-08 <code at nfrastack dot com>
+
+   ### Changed
+      - Development versions are more descriptive with build dates
+
 ## 5.0.0 2026-09-01 <code at nfrastack dot com>
 
    ### Added

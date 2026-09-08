@@ -1,16 +1,17 @@
-## 5.0.1-dev 2026-09-04 <code at nfrastack dot com>
+## 5.0.1 2026-09-08 <code at nfrastack dot com>
 
    ### Added
       - Allow explicit names alongside ALL db_name.include declarations
       - Allow excluding names when db_name.include=ALL
+      - (mysql) introduce toggles for events, stored procedures, triggers and views
 
    ### Changed
-      - Mysql - accomodate differences between mysql 8.x and mariadb sub operations
-      - Mysql - introduce toggles for events, stored procedures, triggers and views
+      - (mysql) accomodate differences between mysql 8.x and mariadb sub operations
       - Refine container detection routines
-      - Fix job ids not emitting during prune operations
+      - Development versions are more descriptive
       - More debug verbosity
       - Delay version check on first startup
+      - Fix job ids not emitting during prune operations
 
 ## 5.0.0 2026-09-03 <code at nfrastack dot com>
 
